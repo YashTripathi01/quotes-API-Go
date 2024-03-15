@@ -19,9 +19,11 @@ func main() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
-	e.GET("/", handlers.HelloIndex)
+	e.GET("/", handlers.Home)
 	e.GET("/quotes", handlers.GetQuotesList)
+	e.GET("/quotes/today", handlers.QuoteOfTheDayHandler)
 	e.POST("/quotes", handlers.CreateQuotes)
+	e.PUT("/quotes", handlers.ResetQuoteOfTheDay)
 
 	e.Logger.Fatal(e.Start(":1323"))
 }
