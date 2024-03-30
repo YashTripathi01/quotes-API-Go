@@ -11,6 +11,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
@@ -81,6 +82,7 @@ func CreateQuotes(c echo.Context) error {
 	quote.CreatedAt = time.Now()
 	quote.UpdatedAt = time.Now()
 	quote.UsedAsQOTD = false
+	quote.UsedAsQotdDate = ""
 
 	_, err := initializers.QuotesCollection.InsertOne(c.Request().Context(), quote)
 
@@ -91,16 +93,29 @@ func CreateQuotes(c echo.Context) error {
 	return c.JSON(http.StatusCreated, quote)
 }
 
-func QuoteOfTheDayHandler(c echo.Context) error {
+func GetQuoteOfTheDayHandler(c echo.Context) error {
+	// get the current date
+	today := time.Now().Format("2006-01-02")
+
+	// check if a "Quote of the Day" has already been set for today
 	var quote models.QuotesList
-	filter := bson.M{"used_as_qotd": false}
+	filter := bson.M{"used_as_qotd_date": today}
+	err := initializers.QuotesCollection.FindOne(c.Request().Context(), filter).Decode(&quote)
 
-	// select a random quote
-	opts := options.Find().SetSort(bson.D{
-		bson.E{Key: "_id", Value: 1},
-	})
+	if err != nil && err != mongo.ErrNoDocuments {
+		return c.JSON(http.StatusInternalServerError, echo.Map{"error": "Failed to fetch quote of the day"})
+	}
 
+	// if a quote has already been set for today, return it
+	if err == nil {
+		return c.JSON(http.StatusOK, quote)
+	}
+
+	// if no quote has been set for today, fetch a new quote
+	filter = bson.M{"used_as_qotd": false}
+	opts := options.Find().SetSort(bson.D{bson.E{Key: "_id", Value: 1}})
 	cursor, err := initializers.QuotesCollection.Find(c.Request().Context(), filter, opts)
+
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, echo.Map{"error": "Failed to fetch quotes"})
 	}
@@ -114,7 +129,8 @@ func QuoteOfTheDayHandler(c echo.Context) error {
 		}
 	} else {
 		// if no unused quotes are available, reset
-		_, err = initializers.QuotesCollection.UpdateMany(c.Request().Context(), bson.M{}, bson.M{"$set": bson.M{"used_as_qotd": false}})
+		_, err = initializers.QuotesCollection.UpdateMany(
+			c.Request().Context(), bson.M{}, bson.M{"$set": bson.M{"used_as_qotd": false, "used_as_qotd_date": ""}})
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, echo.Map{"error": "Failed to reset quotes"})
 		}
@@ -136,8 +152,9 @@ func QuoteOfTheDayHandler(c echo.Context) error {
 		}
 	}
 
-	// mark the selected quote as used for "Quote of the Day"
-	_, err = initializers.QuotesCollection.UpdateOne(c.Request().Context(), bson.M{"_id": quote.ID}, bson.M{"$set": bson.M{"used_as_qotd": true}})
+	// mark the selected quote as "Quote of the Day" for the current date
+	_, err = initializers.QuotesCollection.UpdateOne(
+		c.Request().Context(), bson.M{"_id": quote.ID}, bson.M{"$set": bson.M{"used_as_qotd_date": today, "used_as_qotd": true}})
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, echo.Map{"error": "Failed to update quote"})
 	}
@@ -149,7 +166,7 @@ func ResetQuoteOfTheDay(c echo.Context) error {
 	_, err := initializers.QuotesCollection.UpdateMany(
 		c.Request().Context(),
 		bson.M{},
-		bson.M{"$set": bson.M{"used_as_qotd": false}},
+		bson.M{"$set": bson.M{"used_as_qotd": false, "used_as_qotd_date": ""}},
 	)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, echo.Map{"error": "Failed to update quotes"})

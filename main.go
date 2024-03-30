@@ -21,7 +21,7 @@ func main() {
 
 	e.GET("/", handlers.Home)
 	e.GET("/quotes", handlers.GetQuotesList)
-	e.GET("/quotes/today", handlers.QuoteOfTheDayHandler)
+	e.GET("/quotes/today", handlers.GetQuoteOfTheDayHandler)
 	e.POST("/quotes", handlers.CreateQuotes)
 	e.PUT("/quotes", handlers.ResetQuoteOfTheDay)
 
