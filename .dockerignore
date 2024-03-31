@@ -1,0 +1,59 @@
+# Git
+.git
+.gitignore
+
+# Docker
+.docker
+
+# CI
+.circleci
+.github
+
+# Logs
+logs
+*.log
+
+# Temporary files
+tmp
+.tmp
+temp
+
+# OS metadata
+.DS_Store
+Thumbs.db
+
+# Editor directories and files
+.vscode
+.idea
+*.sublime-project
+*.sublime-workspace
+
+# Environment files
+.env
+.env.*
+
+# Build artifacts
+bin
+obj
+out
+
+# Dependencies
+node_modules
+vendor
+.gradle
+
+# Testing
+coverage
+test-results
+__pycache__
+
+# Compiled output
+dist
+build
+*.exe
+*.dll
+
+# Miscellaneous
+.next
+.vercel
+.netlify
