@@ -30,7 +30,7 @@ This application provides a simple RESTful API built with GoLang and the Echo fr
    ```
 5. Run the docker container:
    ```sh
-   docker run -p 1323:1323 -e DB_URI=mongodb://localhost:27017/quotes quotes-image
+   docker run -p 1323:1323 -e DATABASE_URL=mongodb://localhost:27017/quotes quotes-image
    ```
 
 ### Without Docker
