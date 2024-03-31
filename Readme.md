@@ -44,15 +44,19 @@ This application provides a simple RESTful API built with GoLang and the Echo fr
    ```sh
    cd quotes-API-Go
    ```
-4. Install dependencies:
+4. Copy the `.env.example` file to `.env` and update the values:
+   ```sh
+   cp .env.example .env
+   ```
+5. Install dependencies:
    ```sh
    go mod tidy
    ```
-5. Build the application:
+6. Build the application:
    ```sh
    go build
    ```
-6. Run the application:
+7. Run the application:
    ```sh
    ./quotes-API-Go
    ```
